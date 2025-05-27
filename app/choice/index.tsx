@@ -8,13 +8,11 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
 const navItems = [
-  { id: 1, path: "/render", label: "Sertanejo" },
-  { id: 2, path: "/render", label: "Pagode" },
-  { id: 3, path: "/render", label: "Funk" },
-  { id: 4, path: "/render", label: "Rock" },
-  { id: 5, path: "/render", label: "MPB" },
-  { id: 6, path: "/render", label: "Rap" },
-  { id: 7, path: "/render", label: "Eletrônica" },
+  { id: 1, path: "/render?playlist=Variadas", label: "Variadas" },
+  { id: 2, path: "/render?playlist=Sertanejo", label: "Sertanejo" },
+  { id: 3, path: "/render?playlist=Pagode", label: "Pagode" },
+  { id: 4, path: "/render?playlist=Funk", label: "Funk" },
+  { id: 5, path: "/render?playlist=Gospel", label: "Gospel" },
 ];
 
 export default function Choice() {

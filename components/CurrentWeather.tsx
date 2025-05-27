@@ -1,3 +1,4 @@
+import { useTime } from "@/hooks/useTime";
 import { IconSun } from "./icons/Sun";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
@@ -10,6 +11,8 @@ const payload = {
 };
 
 export const CurrentWeather = () => {
+  const { time } = useTime();
+
   return (
     <ThemedView
       style={{
@@ -46,7 +49,7 @@ export const CurrentWeather = () => {
         }}
       >
         <ThemedText>{payload.city}</ThemedText>
-        <ThemedText style={{ fontWeight: "bold" }}>{payload.time}</ThemedText>
+        <ThemedText style={{ fontWeight: "bold" }}>{time}</ThemedText>
       </ThemedView>
     </ThemedView>
   );

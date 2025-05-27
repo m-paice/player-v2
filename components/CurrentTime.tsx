@@ -1,8 +1,12 @@
 import dayjs from "dayjs";
+
+import { useTime } from "@/hooks/useTime";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 
 export const CurrentTime = () => {
+  const { time } = useTime();
+
   return (
     <ThemedView
       style={{
@@ -14,9 +18,7 @@ export const CurrentTime = () => {
         gap: 16,
       }}
     >
-      <ThemedText style={{ fontSize: 100, lineHeight: 80 }}>
-        {dayjs().format("HH:mm")}
-      </ThemedText>
+      <ThemedText style={{ fontSize: 100, lineHeight: 80 }}>{time}</ThemedText>
       <ThemedText>{dayjs().format("dddd, D [de] MMMM [de] YYYY")}</ThemedText>
     </ThemedView>
   );
