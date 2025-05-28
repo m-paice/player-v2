@@ -30,7 +30,7 @@ export const CurrentSchedule = ({ schedule }: Props) => {
       }}
     >
       <ThemedText style={{ fontSize: 60, lineHeight: 70 }}>
-        Bem-vindo {schedule?.user.name}
+        Bem-vindo {schedule?.shortName || schedule?.user.name}
       </ThemedText>
       <ThemedView
         style={{

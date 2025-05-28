@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 // components
@@ -7,15 +8,34 @@ import { MusicItem } from "@/components/MusicItem";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
+// images
+import funk from "../../assets/albums/funk.jpeg";
+import gospel from "../../assets/albums/gospel.jpeg";
+import pagode from "../../assets/albums/pagode.jpeg";
+import sertanejo from "../../assets/albums/sertanejo.jpeg";
+import variadas from "../../assets/albums/variadas.jpeg";
+
 const navItems = [
-  { id: 1, path: "/render?playlist=Variadas", label: "Variadas" },
-  { id: 2, path: "/render?playlist=Sertanejo", label: "Sertanejo" },
-  { id: 3, path: "/render?playlist=Pagode", label: "Pagode" },
-  { id: 4, path: "/render?playlist=Funk", label: "Funk" },
-  { id: 5, path: "/render?playlist=Gospel", label: "Gospel" },
+  {
+    id: 1,
+    path: "/render?playlist=Variadas",
+    label: "Variadas",
+    image: variadas,
+  },
+  {
+    id: 2,
+    path: "/render?playlist=Sertanejo",
+    label: "Sertanejo",
+    image: sertanejo,
+  },
+  { id: 3, path: "/render?playlist=Pagode", label: "Pagode", image: pagode },
+  { id: 4, path: "/render?playlist=Funk", label: "Funk", image: funk },
+  { id: 5, path: "/render?playlist=Gospel", label: "Gospel", image: gospel },
 ];
 
 export default function Choice() {
+  const [currentFocus, setCurrentFocus] = useState(0);
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -29,11 +49,11 @@ export default function Choice() {
             <FocusableLink
               key={item.id}
               href={item.path}
-              // isFocused={currentFocus === index}
-              isFocused={false}
-              onPress={() => {}}
+              isFocused={currentFocus === index}
+              onFocus={() => setCurrentFocus(index)}
+              nextFocusRight={index + 1 < navItems.length ? index + 1 : 0}
             >
-              <MusicItem music={item.label} />
+              <MusicItem music={item.label} image={item.image} />
             </FocusableLink>
           ))}
         </View>

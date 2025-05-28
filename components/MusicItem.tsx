@@ -1,16 +1,17 @@
-import { StyleSheet, View } from "react-native";
+import { Image, ImageSourcePropType, StyleSheet, View } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 
 interface Props {
   music: string;
+  image: ImageSourcePropType;
 }
 
-export function MusicItem({ music }: Props) {
+export function MusicItem({ music, image }: Props) {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.image}>
-        <ThemedText>image</ThemedText>
+        <Image source={image} style={{ width: 80, height: 80 }} />
       </View>
       <View style={styles.text}>
         <ThemedText>{music}</ThemedText>

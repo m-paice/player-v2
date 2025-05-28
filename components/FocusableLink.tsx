@@ -1,34 +1,51 @@
-import { Link } from "expo-router";
+import { Link, RelativePathString } from "expo-router";
 import React from "react";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
+import { ThemedView } from "./ThemedView";
 
-export const FocusableLink = ({ isFocused, href, onPress, children }) => {
+interface Props {
+  href: RelativePathString;
+  isFocused: boolean;
+  children: React.ReactNode;
+  nextFocusRight: number;
+
+  onFocus?: () => void;
+}
+
+export const FocusableLink = ({
+  isFocused,
+  href,
+  children,
+  nextFocusRight,
+  onFocus,
+}: Props) => {
   return (
-    <Link href={href} asChild>
-      <Pressable
-        style={[styles.link, isFocused && styles.focused]}
-        onPress={onPress}
-        accessibilityRole="link"
-        accessibilityState={{ selected: isFocused }}
-      >
-        <Text style={[styles.text, isFocused && styles.focusedText]}>
+    <ThemedView style={[styles.link, isFocused && styles.focused]}>
+      <Link href={href} asChild>
+        <TouchableOpacity
+          accessibilityRole="link"
+          accessibilityState={{ selected: isFocused }}
+          onFocus={onFocus}
+          hasTVPreferredFocus
+          nextFocusRight={nextFocusRight}
+        >
           {children}
-        </Text>
-      </Pressable>
-    </Link>
+        </TouchableOpacity>
+      </Link>
+    </ThemedView>
   );
 };
 
 const styles = StyleSheet.create({
   link: {
-    padding: 12,
+    // padding: 12,
     marginVertical: 4,
     borderRadius: 8,
   },
   focused: {
-    backgroundColor: "#c1c1c1",
     borderWidth: 2,
     borderColor: "#007bff",
+    opacity: 0.8,
   },
   text: {
     fontSize: 16,

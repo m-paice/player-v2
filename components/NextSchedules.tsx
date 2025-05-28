@@ -25,7 +25,7 @@ export const NextSchedules = ({ schedules }: Props) => {
             </ThemedView>
             <ThemedView style={{ backgroundColor: "#c1c1c1" }}>
               <ThemedText style={{ fontWeight: "bold" }}>
-                {schedule.user.name}
+                {schedule?.shortName} ({schedule.user.name})
               </ThemedText>
               <ThemedText style={{ maxWidth: 280 }}>
                 {schedule.services.map((item) => item.name).join(" + ")}

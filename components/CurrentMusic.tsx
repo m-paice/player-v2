@@ -112,6 +112,8 @@ export const CurrentMusic = ({ urls }: Props) => {
               display: "flex",
               flexDirection: "row",
             }}
+            numberOfLines={1}
+            ellipsizeMode="tail"
           >
             {currentMusic?.name} - {currentMusic?.artist}
           </ThemedText>
@@ -128,5 +130,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     backgroundColor: "#c1c1c1",
+
+    width: 600,
   },
 });
