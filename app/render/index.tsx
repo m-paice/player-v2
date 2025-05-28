@@ -2,7 +2,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated } from "react-native";
+import { Animated, StyleSheet } from "react-native";
 
 import { ScheduleItem } from "@/@types/Schedule";
 import { CurrentMusic } from "@/components/CurrentMusic";
@@ -61,10 +61,12 @@ export default function Render() {
   const [nextSchedules, setNextSchedules] = useState<ScheduleItem[]>([]);
 
   useEffect(() => {
+    if (currentItem !== "Schedules") return;
+
     const fetchSchedules = async (start: string, end: string) => {
       console.log("fetching schedules", start, end);
 
-      const response = await axios.get(
+      const response = await axios.get<ScheduleItem[]>(
         `${URL_API}/public/account/${ACCOUNT_ID}/schedules`,
         {
           params: {
@@ -78,7 +80,9 @@ export default function Render() {
         }
       );
 
-      return response.data;
+      return response.data.sort(
+        (a, b) => dayjs(a.scheduleAt).valueOf() - dayjs(b.scheduleAt).valueOf()
+      );
     };
 
     const fetch = async () => {
@@ -98,7 +102,7 @@ export default function Render() {
     };
 
     fetch();
-  }, []);
+  }, [currentItem]);
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -168,6 +172,18 @@ export default function Render() {
     [nextSchedules]
   );
 
+  const scheduleCurrent = useMemo(() => {
+    const lastSchedules = schedules
+      .filter((item) => dayjs(item.scheduleAt).isBefore(dayjs()))
+      .sort(
+        (a, b) => dayjs(b.scheduleAt).valueOf() - dayjs(a.scheduleAt).valueOf()
+      );
+
+    if (lastSchedules.length === 0) return null;
+
+    return lastSchedules[0];
+  }, [schedules]);
+
   const schedulesCurrentNext = useMemo(
     () =>
       schedules
@@ -184,30 +200,15 @@ export default function Render() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <ThemedView style={{ flex: 1 }}>
-        <ThemedView
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            paddingHorizontal: 32,
-            paddingTop: 32,
-            backgroundColor: "#f0f0f0",
-            paddingBottom: 8,
-          }}
-        >
+        <ThemedView style={styles.header}>
           <CurrentMusic urls={urls} />
           <CurrentWeather />
         </ThemedView>
-        <Animated.View
-          style={{
-            flex: 1,
-            paddingHorizontal: 32,
-            opacity: fadeAnim,
-          }}
-        >
+        <Animated.View style={[styles.main, { opacity: fadeAnim }]}>
           <Component
             schedules={schedulesWithAddicionals}
             nextSchedules={schedulesNextWithAddicionals}
+            schedule={scheduleCurrent}
           />
         </Animated.View>
         <ThemedView>
@@ -217,3 +218,19 @@ export default function Render() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 32,
+    paddingTop: 32,
+    backgroundColor: "#c1c1c1",
+    paddingBottom: 8,
+  },
+  main: {
+    flex: 1,
+    paddingHorizontal: 32,
+  },
+});

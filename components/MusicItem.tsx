@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     padding: 10,
     fontWeight: "bold",
-    backgroundColor: "#eee",
+    backgroundColor: "#c1c1c1",
 
     display: "flex",
     justifyContent: "center",

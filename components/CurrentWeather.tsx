@@ -20,7 +20,7 @@ export const CurrentWeather = () => {
         flexDirection: "row",
         justifyContent: "space-between",
         gap: 8,
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#c1c1c1",
       }}
     >
       <ThemedView
@@ -29,7 +29,7 @@ export const CurrentWeather = () => {
           flexDirection: "row",
           alignItems: "center",
           gap: 8,
-          backgroundColor: "#f0f0f0",
+          backgroundColor: "#c1c1c1",
         }}
       >
         <IconSun />
@@ -45,7 +45,7 @@ export const CurrentWeather = () => {
           display: "flex",
           flexDirection: "row",
           gap: 8,
-          backgroundColor: "#f0f0f0",
+          backgroundColor: "#c1c1c1",
         }}
       >
         <ThemedText>{payload.city}</ThemedText>

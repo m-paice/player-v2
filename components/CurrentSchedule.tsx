@@ -1,18 +1,24 @@
+import { ScheduleItem } from "@/@types/Schedule";
 import dayjs from "dayjs";
+
+// icons
 import { IconArchive } from "./icons/Archive";
 import { IconCalendar } from "./icons/Calendar";
 import { IconScissors } from "./icons/Scissors";
+// components
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 
 const payload = {
-  name: "João Pedro",
-  services: ["Corte Degrade", "Barba"],
   schedules: 11,
   lastSchedule: new Date("2023-10-01T10:00:00Z"),
 };
 
-export const CurrentSchedule = () => {
+interface Props {
+  schedule: ScheduleItem | null;
+}
+
+export const CurrentSchedule = ({ schedule }: Props) => {
   return (
     <ThemedView
       style={{
@@ -24,7 +30,7 @@ export const CurrentSchedule = () => {
       }}
     >
       <ThemedText style={{ fontSize: 60, lineHeight: 70 }}>
-        Bem-vindo {payload.name}
+        Bem-vindo {schedule?.user.name}
       </ThemedText>
       <ThemedView
         style={{
@@ -35,7 +41,9 @@ export const CurrentSchedule = () => {
         }}
       >
         <IconScissors />
-        <ThemedText>{payload.services.join(" + ")}</ThemedText>
+        <ThemedText>
+          {schedule?.services.map((item) => item.name).join(" + ")}
+        </ThemedText>
       </ThemedView>
       <ThemedView
         style={{

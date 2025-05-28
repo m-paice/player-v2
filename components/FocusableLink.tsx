@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   focused: {
-    backgroundColor: "#e0e0e0",
+    backgroundColor: "#c1c1c1",
     borderWidth: 2,
     borderColor: "#007bff",
   },

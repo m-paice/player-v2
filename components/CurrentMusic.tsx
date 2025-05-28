@@ -127,6 +127,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#c1c1c1",
   },
 });

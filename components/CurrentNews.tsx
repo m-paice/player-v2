@@ -41,7 +41,7 @@ export const CurrentNews = () => {
         style={{
           width: 300,
           height: "100%",
-          backgroundColor: "#f0f0f0",
+          backgroundColor: "#c1c1c1",
           padding: 16,
         }}
       >
