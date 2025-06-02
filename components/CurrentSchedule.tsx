@@ -29,7 +29,7 @@ export const CurrentSchedule = ({ schedule }: Props) => {
         alignItems: "center",
       }}
     >
-      <ThemedText style={{ fontSize: 60, lineHeight: 70 }}>
+      <ThemedText style={{ fontSize: 60, lineHeight: 70, textAlign: "center" }}>
         Bem-vindo {schedule?.shortName || schedule?.user.name}
       </ThemedText>
       <ThemedView

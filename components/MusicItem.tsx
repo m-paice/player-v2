@@ -25,17 +25,14 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
   },
-
   image: {
     width: 80,
     height: 80,
-    backgroundColor: "#ccc",
 
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
   },
-
   text: {
     fontSize: 20,
     padding: 10,

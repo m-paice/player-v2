@@ -105,7 +105,7 @@ export const CurrentMusic = ({ urls }: Props) => {
       {!currentMusic ? (
         <ThemedText>Carregando músicas</ThemedText>
       ) : (
-        <ThemedView style={styles.container}>
+        <ThemedView style={styles.content}>
           <IconMusic />
           <ThemedText
             style={{
@@ -129,8 +129,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#c1c1c1",
 
-    width: 600,
+    width: "68%",
+  },
+  content: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 8,
+    width: "95%",
   },
 });

@@ -17,15 +17,15 @@ export const NextSchedules = ({ schedules }: Props) => {
       ) : (
         schedules.map((schedule) => (
           <ThemedView key={schedule.id} style={styles.content}>
-            <ThemedView style={{ backgroundColor: "#c1c1c1" }}>
+            <ThemedView>
               <ThemedText>HOJE</ThemedText>
               <ThemedText>
                 {dayjs(schedule.scheduleAt).format("HH:mm")}
               </ThemedText>
             </ThemedView>
-            <ThemedView style={{ backgroundColor: "#c1c1c1" }}>
+            <ThemedView>
               <ThemedText style={{ fontWeight: "bold" }}>
-                {schedule?.shortName} ({schedule.user.name})
+                {schedule?.shortName.trim()}
               </ThemedText>
               <ThemedText style={{ maxWidth: 280 }}>
                 {schedule.services.map((item) => item.name).join(" + ")}

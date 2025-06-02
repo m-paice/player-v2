@@ -1,4 +1,5 @@
 import { useTime } from "@/hooks/useTime";
+import { StyleSheet } from "react-native";
 import { IconSun } from "./icons/Sun";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
@@ -14,24 +15,8 @@ export const CurrentWeather = () => {
   const { time } = useTime();
 
   return (
-    <ThemedView
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        gap: 8,
-        backgroundColor: "#c1c1c1",
-      }}
-    >
-      <ThemedView
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
-          backgroundColor: "#c1c1c1",
-        }}
-      >
+    <ThemedView style={styles.container}>
+      <ThemedView style={styles.content}>
         <IconSun />
         <ThemedText style={{ fontSize: 22, marginRight: 30 }}>
           {payload.max}°
@@ -45,7 +30,6 @@ export const CurrentWeather = () => {
           display: "flex",
           flexDirection: "row",
           gap: 8,
-          backgroundColor: "#c1c1c1",
         }}
       >
         <ThemedText>{payload.city}</ThemedText>
@@ -54,3 +38,19 @@ export const CurrentWeather = () => {
     </ThemedView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 8,
+    width: "32%",
+  },
+  content: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+});
