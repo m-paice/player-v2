@@ -288,7 +288,7 @@ export default function Render() {
       title: news[currentNews]?.title,
       image: news[currentNews]?.media || logo,
       nextNews:
-        news.slice(currentNews + 1, currentNews + 4).map((n) => n.title) || [],
+        news.slice(currentNews + 1, currentNews + 5).map((n) => n.title) || [],
     };
   }, [currentNews, news]);
 

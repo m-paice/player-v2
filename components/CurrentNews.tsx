@@ -19,18 +19,29 @@ export const CurrentNews = ({ news }: Props) => {
         paddingVertical: 16,
         display: "flex",
         flexDirection: "row",
+        gap: 16,
       }}
     >
       <ThemedView style={{ flex: 1 }}>
-        <ThemedText style={{ fontSize: 24, lineHeight: 30 }}>
-          {news.title}
-        </ThemedText>
         <Image
           source={{
             uri: news.image,
           }}
-          style={{ width: "auto", height: "80%", objectFit: "contain" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
+        <ThemedText
+          style={{
+            fontSize: 24,
+            lineHeight: 30,
+            position: "absolute",
+            bottom: 16,
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            width: "100%",
+            padding: 8,
+          }}
+        >
+          {news.title}
+        </ThemedText>
       </ThemedView>
       <ThemedView
         style={{
@@ -43,6 +54,7 @@ export const CurrentNews = ({ news }: Props) => {
         {news.nextNews.map((news, index) => (
           <ThemedText
             key={index}
+            numberOfLines={2}
             style={{
               fontSize: 16,
               lineHeight: 24,
