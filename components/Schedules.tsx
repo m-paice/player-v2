@@ -7,17 +7,27 @@ import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 
 interface Props {
+  openToDay: boolean;
+  nextDay: string;
   schedules: string[];
   nextSchedules: string[];
+  hours: string[][];
+  nextHours: string[][];
 }
 
-const START_HOUR = "07:30";
-const END_HOUR = "19:00";
+interface TimeSlotsParams {
+  hours: string[][];
+}
 
-const START_INTERVAL = "11:30";
-const END_INTERVAL = "14:00";
+const timeSlots = ({ hours }: TimeSlotsParams) => {
+  if (hours.length === 0) return [];
 
-const timeSlots = () => {
+  const START_HOUR = hours[0][0];
+  const END_HOUR = hours[1][1];
+
+  const START_INTERVAL = hours[0][1];
+  const END_INTERVAL = hours[1][0];
+
   const timeSlots = generateTimeSlots(START_HOUR, END_HOUR);
   const intervalSlots = generateTimeSlots(START_INTERVAL, END_INTERVAL);
 
@@ -31,9 +41,21 @@ const timeSlots = () => {
   return timeSlots.filter((slot) => !intervalSlots.includes(slot));
 };
 
-const filteredSchedules = (schedules: string[], checkCurrentTime = false) => {
+interface FilteredSchedulesParams {
+  schedules: string[];
+  checkCurrentTime?: boolean;
+  hours: string[][];
+}
+
+const filteredSchedules = ({
+  schedules,
+  checkCurrentTime,
+  hours,
+}: FilteredSchedulesParams) => {
   if (checkCurrentTime)
-    return timeSlots().filter(
+    return timeSlots({
+      hours,
+    }).filter(
       (time) =>
         dayjs()
           .set("hour", parseInt(time.split(":")[0], 10))
@@ -41,15 +63,35 @@ const filteredSchedules = (schedules: string[], checkCurrentTime = false) => {
           .isAfter(dayjs()) && !schedules.includes(time)
     );
 
-  return timeSlots().filter((time) => !schedules.includes(time));
+  return timeSlots({
+    hours,
+  }).filter((time) => !schedules.includes(time));
 };
-export const Schedules = ({ schedules, nextSchedules }: Props) => {
+
+export const Schedules = ({
+  openToDay,
+  nextDay,
+  schedules,
+  nextSchedules,
+  hours,
+  nextHours,
+}: Props) => {
   const currentSchedulesData = useMemo(
-    () => filteredSchedules(schedules, true),
+    () =>
+      filteredSchedules({
+        schedules,
+        checkCurrentTime: true,
+        hours,
+      }),
     [schedules]
   );
   const nextSchedulesData = useMemo(
-    () => filteredSchedules(nextSchedules),
+    () =>
+      filteredSchedules({
+        schedules: nextSchedules,
+        checkCurrentTime: false,
+        hours: nextHours,
+      }),
     [nextSchedules]
   );
 
@@ -60,7 +102,20 @@ export const Schedules = ({ schedules, nextSchedules }: Props) => {
           Hoje - {dayjs().format("D [de] MMMM")}
         </ThemedText>
         <ThemedView style={styles.content}>
-          {currentSchedulesData.length === 0 ? (
+          {!openToDay ? (
+            <ThemedView
+              style={{
+                width: "100%",
+                height: "100%",
+                flex: 1,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <ThemedText type="title">Fechado!</ThemedText>
+            </ThemedView>
+          ) : currentSchedulesData.length === 0 ? (
             <ThemedText style={{ width: "100%", textAlign: "center" }}>
               Não há horários disponíveis para hoje.
             </ThemedText>
@@ -77,12 +132,12 @@ export const Schedules = ({ schedules, nextSchedules }: Props) => {
       </ThemedView>
       <ThemedView style={{ width: "50%", padding: 16 }}>
         <ThemedText style={styles.title}>
-          Amanhã - {dayjs().add(1, "day").format("D [de] MMMM")}
+          {nextDay} - {dayjs().add(1, "day").format("D [de] MMMM")}
         </ThemedText>
         <ThemedView style={styles.content}>
           {nextSchedulesData.length === 0 ? (
             <ThemedText style={{ width: "100%", textAlign: "center" }}>
-              Não há horários disponíveis para amanhã.
+              Não há horários disponíveis para {nextDay}.
             </ThemedText>
           ) : (
             nextSchedulesData.map((time) => {

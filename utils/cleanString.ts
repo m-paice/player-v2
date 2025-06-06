@@ -1,0 +1,57 @@
+const mapaAcentos: Record<string, string> = {
+  à: "a",
+  á: "a",
+  â: "a",
+  ã: "a",
+  ä: "a",
+  À: "A",
+  Á: "A",
+  Â: "A",
+  Ã: "A",
+  Ä: "A",
+  è: "e",
+  é: "e",
+  ê: "e",
+  ë: "e",
+  È: "E",
+  É: "E",
+  Ê: "E",
+  Ë: "E",
+  ì: "i",
+  í: "i",
+  î: "i",
+  ï: "i",
+  Ì: "I",
+  Í: "I",
+  Î: "I",
+  Ï: "I",
+  ò: "o",
+  ó: "o",
+  ô: "o",
+  õ: "o",
+  ö: "o",
+  Ò: "O",
+  Ó: "O",
+  Ô: "O",
+  Õ: "O",
+  Ö: "O",
+  ù: "u",
+  ú: "u",
+  û: "u",
+  ü: "u",
+  Ù: "U",
+  Ú: "U",
+  Û: "U",
+  Ü: "U",
+  ñ: "n",
+  Ñ: "N",
+};
+
+export const cleanString = (str: string) => {
+  return str.replace(
+    /[àáâãäÀÁÂÃÄèéêëÈÉÊËìíîïÌÍÎÏòóôõöÒÓÔÕÖùúûüÙÚÛÜñÑ]/g,
+    function (match) {
+      return mapaAcentos[match] || match;
+    }
+  );
+};
