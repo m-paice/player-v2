@@ -1,5 +1,6 @@
-import { Image } from "react-native";
+import { Animated, Dimensions } from "react-native";
 
+import { useEffect, useRef } from "react";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 
@@ -12,6 +13,23 @@ interface Props {
 }
 
 export const CurrentNews = ({ news }: Props) => {
+  const panY = useRef(new Animated.Value(0)).current;
+  const screenHeight = Dimensions.get("window").height;
+
+  useEffect(() => {
+    const animation = Animated.timing(panY, {
+      toValue: -screenHeight * 0.3,
+      duration: 30_000,
+      useNativeDriver: true,
+    });
+
+    animation.start();
+
+    return () => {
+      animation.stop();
+    };
+  }, [panY, screenHeight]);
+
   return (
     <ThemedView
       style={{
@@ -22,12 +40,17 @@ export const CurrentNews = ({ news }: Props) => {
         gap: 16,
       }}
     >
-      <ThemedView style={{ flex: 1 }}>
-        <Image
+      <ThemedView style={{ flex: 1, overflow: "hidden" }}>
+        <Animated.Image
           source={{
             uri: news.image,
           }}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={{
+            width: "100%",
+            height: "130%",
+            objectFit: "cover",
+            transform: [{ translateY: panY }],
+          }}
         />
         <ThemedText
           style={{
