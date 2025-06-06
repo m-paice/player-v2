@@ -3,22 +3,15 @@ import { Image } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 
-import image from "../assets/images/capa-news.png";
+interface Props {
+  news: {
+    title: string;
+    image: any;
+    nextNews: string[];
+  };
+}
 
-const payload = {
-  title:
-    "Ancelotti confirma acerto com seleção, mas se nega dar detalhes até dia 26. ",
-  image: "",
-  nextNews: [
-    "Seleção brasileira anuncia novo técnico",
-    "Ancelotti fala sobre futuro",
-    "Brasil se prepara para amistosos",
-    "Ancelotti comenta sobre jogadores convocados",
-    "Expectativa para a Copa do Mundo",
-  ],
-};
-
-export const CurrentNews = () => {
+export const CurrentNews = ({ news }: Props) => {
   return (
     <ThemedView
       style={{
@@ -30,10 +23,12 @@ export const CurrentNews = () => {
     >
       <ThemedView style={{ flex: 1 }}>
         <ThemedText style={{ fontSize: 24, lineHeight: 30 }}>
-          {payload.title}
+          {news.title}
         </ThemedText>
         <Image
-          source={image}
+          source={{
+            uri: news.image,
+          }}
           style={{ width: "auto", height: "80%", objectFit: "contain" }}
         />
       </ThemedView>
@@ -45,7 +40,7 @@ export const CurrentNews = () => {
           padding: 16,
         }}
       >
-        {payload.nextNews.map((news, index) => (
+        {news.nextNews.map((news, index) => (
           <ThemedText
             key={index}
             style={{

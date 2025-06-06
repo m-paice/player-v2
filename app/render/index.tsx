@@ -27,6 +27,7 @@ const components = [
 const URL_PLAYER = "https://player.meupetrecho.com.br";
 const URL_API = "https://api.meupetrecho.com.br/api/v1";
 const ACCOUNT_ID = "85b71750-b509-4e2a-8727-0a79df94ab83";
+const TIMEOUT = 15_000; // 10 seconds
 
 interface Config {
   days: Record<string, boolean>;
@@ -87,6 +88,8 @@ export default function Render() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const [urls, setUrls] = useState<PlaylistItem[]>([]);
+  const [news, setNews] = useState<any[]>([]);
+  const [currentNews, setCurrentNews] = useState(0);
   const [openToDay, setOpenToDay] = useState(false);
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
   const [nextSchedules, setNextSchedules] = useState<ScheduleItem[]>([]);
@@ -137,27 +140,38 @@ export default function Render() {
   }, [config]);
 
   useEffect(() => {
-    if (currentItem !== "Schedules") return;
+    if (currentItem === "CurrentNews" && news.length > 0) {
+      setTimeout(() => {
+        setCurrentNews((prev) => (prev + 1) % news.length);
+      }, TIMEOUT);
+    }
 
-    const fetch = async () => {
-      const response = await Promise.all([
-        fetchSchedules(
-          dayjs().startOf("day").toISOString(),
-          dayjs().endOf("day").toISOString()
-        ),
-        fetchSchedules(
-          dayjs().add(amountNextOpenDay, "day").startOf("day").toISOString(),
-          dayjs().add(amountNextOpenDay, "day").endOf("day").toISOString()
-        ),
-      ]);
+    if (currentItem === "Schedules") {
+      const fetch = async () => {
+        try {
+          const response = await Promise.all([
+            fetchSchedules(
+              dayjs().startOf("day").toISOString(),
+              dayjs().endOf("day").toISOString()
+            ),
+            fetchSchedules(
+              dayjs()
+                .add(amountNextOpenDay, "day")
+                .startOf("day")
+                .toISOString(),
+              dayjs().add(amountNextOpenDay, "day").endOf("day").toISOString()
+            ),
+          ]);
 
-      setSchedules(response[0]);
-      setNextSchedules(response[1]);
-    };
+          setSchedules(response[0]);
+          setNextSchedules(response[1]);
+        } catch (error) {
+          console.error("Error fetching schedules:", error);
+        }
+      };
 
-    fetch().catch((error) => {
-      console.error("Error fetching schedules:", error);
-    });
+      fetch();
+    }
   }, [currentItem]);
 
   useEffect(() => {
@@ -198,10 +212,24 @@ export default function Render() {
           useNativeDriver: true,
         }).start();
       });
-    }, 15_000);
+    }, TIMEOUT);
 
     return () => clearInterval(interval);
   }, [fadeAnim]);
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const response = await axios.get(`${URL_PLAYER}/rss/news.json`);
+
+        setNews(response.data.sort(() => Math.random() - 0.5));
+      } catch (error) {
+        console.log("error fetching news", error);
+      }
+    };
+
+    fetchNews();
+  }, []);
 
   const Component = useMemo(() => {
     switch (currentItem) {
@@ -252,6 +280,18 @@ export default function Render() {
     [schedules]
   );
 
+  const newsCurrent = useMemo(() => {
+    if (news.length === 0)
+      return { title: "Carregando...", image: logo, nextNews: [] };
+
+    return {
+      title: news[currentNews]?.title,
+      image: news[currentNews]?.media || logo,
+      nextNews:
+        news.slice(currentNews + 1, currentNews + 4).map((n) => n.title) || [],
+    };
+  }, [currentNews, news]);
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -270,6 +310,7 @@ export default function Render() {
             nextDay={nextDay}
             hours={hours}
             nextHours={nextHours}
+            news={newsCurrent}
           />
         </Animated.View>
         <ThemedView>
