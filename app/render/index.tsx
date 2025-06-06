@@ -2,7 +2,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, StyleSheet } from "react-native";
+import { Animated, Image, StyleSheet } from "react-native";
 
 import { ScheduleItem } from "@/@types/Schedule";
 import { CurrentMusic } from "@/components/CurrentMusic";
@@ -14,6 +14,8 @@ import { NextSchedules } from "@/components/NextSchedules";
 import { Schedules } from "@/components/Schedules";
 import { ThemedView } from "@/components/ThemedView";
 import { cleanString } from "@/utils/cleanString";
+
+import logo from "../../assets/images/logo.jpeg";
 
 const components = [
   "Schedules",
@@ -259,6 +261,7 @@ export default function Render() {
           <CurrentWeather />
         </ThemedView>
         <Animated.View style={[styles.main, { opacity: fadeAnim }]}>
+          <Image source={logo} style={styles.image} />
           <Component
             schedules={schedulesWithAddicionals}
             nextSchedules={schedulesNextWithAddicionals}
@@ -290,5 +293,14 @@ const styles = StyleSheet.create({
   main: {
     flex: 1,
     paddingHorizontal: 32,
+  },
+  image: {
+    // full screen width
+    flex: 1,
+    height: "100%",
+    resizeMode: "cover",
+    borderRadius: 8,
+    position: "absolute",
+    opacity: 0.1,
   },
 });

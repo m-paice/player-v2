@@ -41,7 +41,7 @@ export const CurrentSchedule = ({ schedule }: Props) => {
         }}
       >
         <IconScissors />
-        <ThemedText>
+        <ThemedText type="subtitle">
           {schedule?.services.map((item) => item.name).join(" + ")}
         </ThemedText>
       </ThemedView>

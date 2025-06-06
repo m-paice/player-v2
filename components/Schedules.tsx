@@ -116,7 +116,10 @@ export const Schedules = ({
               <ThemedText type="title">Fechado!</ThemedText>
             </ThemedView>
           ) : currentSchedulesData.length === 0 ? (
-            <ThemedText style={{ width: "100%", textAlign: "center" }}>
+            <ThemedText
+              type="subtitle"
+              style={{ width: "100%", textAlign: "center" }}
+            >
               Não há horários disponíveis para hoje.
             </ThemedText>
           ) : (
@@ -136,7 +139,10 @@ export const Schedules = ({
         </ThemedText>
         <ThemedView style={styles.content}>
           {nextSchedulesData.length === 0 ? (
-            <ThemedText style={{ width: "100%", textAlign: "center" }}>
+            <ThemedText
+              type="subtitle"
+              style={{ width: "100%", textAlign: "center" }}
+            >
               Não há horários disponíveis para {nextDay}.
             </ThemedText>
           ) : (
@@ -169,7 +175,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   item: {
-    padding: 4,
+    padding: 8,
     borderWidth: 1,
     borderColor: "#B2D3D0",
     backgroundColor: "#D2E4E1",
@@ -182,5 +188,5 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     lineHeight: 30,
   },
-  text: { textAlign: "center", color: "#1A3D3B" },
+  text: { textAlign: "center", color: "#1A3D3B", fontSize: 24 },
 });

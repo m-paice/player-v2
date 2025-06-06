@@ -19,7 +19,9 @@ export const CurrentTime = () => {
       }}
     >
       <ThemedText style={{ fontSize: 100, lineHeight: 80 }}>{time}</ThemedText>
-      <ThemedText>{dayjs().format("dddd, D [de] MMMM [de] YYYY")}</ThemedText>
+      <ThemedText type="subtitle">
+        {dayjs().format("dddd, D [de] MMMM [de] YYYY")}
+      </ThemedText>
     </ThemedView>
   );
 };
