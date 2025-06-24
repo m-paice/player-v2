@@ -1,19 +1,15 @@
 export interface ScheduleItem {
-  accountId: string;
-  addition: number;
-  averageTime: number;
-  createdAt: string;
-  deletedAt: any;
-  discount: number;
-  employeeId: string;
-  id: string;
-  scheduleAt: string;
-  services: any[];
-  shortName: any;
-  status: string;
-  updatedAt: string;
-  user: User;
-  userId: string;
+  _id: string;
+  client: {
+    name: string;
+    phone: string;
+  };
+  scheduleAt: Date;
+  services: {
+    _id: string;
+    name: string;
+  }[];
+  createdAt: Date;
 }
 
 export interface User {

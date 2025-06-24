@@ -1,6 +1,3 @@
-import { ScheduleItem } from "@/@types/Schedule";
-import dayjs from "dayjs";
-
 // icons
 import { IconArchive } from "./icons/Archive";
 import { IconCalendar } from "./icons/Calendar";
@@ -9,13 +6,15 @@ import { IconScissors } from "./icons/Scissors";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 
-const payload = {
-  schedules: 11,
-  lastSchedule: new Date("2023-10-01T10:00:00Z"),
-};
-
 interface Props {
-  schedule: ScheduleItem | null;
+  schedule: {
+    count: number;
+    lastSchedule: string;
+    name: string;
+    services: {
+      name: string;
+    }[];
+  } | null;
 }
 
 export const CurrentSchedule = ({ schedule }: Props) => {
@@ -30,7 +29,7 @@ export const CurrentSchedule = ({ schedule }: Props) => {
       }}
     >
       <ThemedText style={{ fontSize: 60, lineHeight: 70, textAlign: "center" }}>
-        Bem-vindo {schedule?.shortName || schedule?.user.name}
+        Bem-vindo {schedule?.name || ""}!
       </ThemedText>
       <ThemedView
         style={{
@@ -63,7 +62,13 @@ export const CurrentSchedule = ({ schedule }: Props) => {
           }}
         >
           <IconCalendar />
-          <ThemedText>Agendamentos: {payload.schedules}</ThemedText>
+          <ThemedText
+            style={{
+              lineHeight: 32,
+            }}
+          >
+            Agendamentos: {schedule?.count}
+          </ThemedText>
         </ThemedView>
         <ThemedView
           style={{
@@ -74,9 +79,7 @@ export const CurrentSchedule = ({ schedule }: Props) => {
           }}
         >
           <IconArchive />
-          <ThemedText>
-            Última vez: {dayjs(payload.lastSchedule).format("DD [de] MMMM")}
-          </ThemedText>
+          <ThemedText>Última vez: {schedule?.lastSchedule}</ThemedText>
         </ThemedView>
       </ThemedView>
     </ThemedView>

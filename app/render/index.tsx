@@ -4,7 +4,6 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Image, StyleSheet } from "react-native";
 
-import { ScheduleItem } from "@/@types/Schedule";
 import { CurrentMusic } from "@/components/CurrentMusic";
 import { CurrentNews } from "@/components/CurrentNews";
 import { CurrentSchedule } from "@/components/CurrentSchedule";
@@ -13,7 +12,6 @@ import { CurrentWeather } from "@/components/CurrentWeather";
 import { NextSchedules } from "@/components/NextSchedules";
 import { Schedules } from "@/components/Schedules";
 import { ThemedView } from "@/components/ThemedView";
-import { cleanString } from "@/utils/cleanString";
 
 import logo from "../../assets/images/logo.jpeg";
 
@@ -25,13 +23,25 @@ const components = [
 ];
 
 const URL_PLAYER = "https://player.meupetrecho.com.br";
-const URL_API = "https://api.meupetrecho.com.br/api/v1";
-const ACCOUNT_ID = "85b71750-b509-4e2a-8727-0a79df94ab83";
-const TIMEOUT = 15_000; // 10 seconds
+const URL_API = "https://api.meupetrecho.com.br/app";
+const ACCOUNT_ID = "684ff406970a3b1154e32b97";
+const TIMEOUT = 15_000; // 15 seconds
 
+interface WeekDay {
+  open: boolean;
+  start: string;
+  end: string;
+  breakStart: string;
+  breakEnd: string;
+}
 interface Config {
-  days: Record<string, boolean>;
-  weekHours: Record<string, string[][]>;
+  monday: WeekDay;
+  tuesday: WeekDay;
+  wednesday: WeekDay;
+  thursday: WeekDay;
+  friday: WeekDay;
+  saturday: WeekDay;
+  sunday: WeekDay;
 }
 
 interface PlaylistItem {
@@ -41,44 +51,45 @@ interface PlaylistItem {
   url: string;
 }
 
-const schedulesCalculateAddicionals = (schedules: ScheduleItem[]) => {
-  return (
-    schedules
-      .map((item) => {
-        const timeAttended = Math.ceil(item.averageTime / 30);
-        if (timeAttended > 1) {
-          return Array.from({ length: timeAttended }, (_, i) =>
-            dayjs(item.scheduleAt)
-              .add(i * 30, "minute")
-              .format("HH:mm")
-          );
-        }
-        return dayjs(item.scheduleAt).format("HH:mm");
-      })
-      .flat() || []
-  );
+const fetchCurrentSchedule = async () => {
+  try {
+    const response = await axios.get(`${URL_API}/schedules/current`, {
+      params: {
+        accountId: ACCOUNT_ID,
+      },
+    });
+
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching current schedule:", error);
+    return null;
+  }
 };
 
-const fetchSchedules = async (start: string, end: string) => {
-  console.log("fetching schedules", start, end);
-
-  const response = await axios.get<ScheduleItem[]>(
-    `${URL_API}/public/account/${ACCOUNT_ID}/schedules`,
-    {
+const fetchNextSchedules = async () => {
+  try {
+    const response = await axios.get(`${URL_API}/schedules/next`, {
       params: {
-        where: {
-          scheduleAt: {
-            $between: [start, end],
-          },
-          status: "pending",
-        },
+        accountId: ACCOUNT_ID,
       },
-    }
-  );
+    });
 
-  return response.data.sort(
-    (a, b) => dayjs(a.scheduleAt).valueOf() - dayjs(b.scheduleAt).valueOf()
-  );
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching next schedules:", error);
+    return [];
+  }
+};
+
+const fetchSchedules = async (date: string) => {
+  const response = await axios.get(`${URL_API}/schedules`, {
+    params: {
+      accountId: ACCOUNT_ID,
+      date,
+    },
+  });
+
+  return response.data.data;
 };
 
 export default function Render() {
@@ -91,21 +102,19 @@ export default function Render() {
   const [news, setNews] = useState<any[]>([]);
   const [currentNews, setCurrentNews] = useState(0);
   const [openToDay, setOpenToDay] = useState(false);
-  const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
-  const [nextSchedules, setNextSchedules] = useState<ScheduleItem[]>([]);
+  const [schedules, setSchedules] = useState<string[]>([]);
+  const [nextSchedules, setNextSchedules] = useState<string[]>([]);
   const [nextDay, setNextDay] = useState("");
-  const [hours, setHours] = useState<string[][]>([]);
-  const [nextHours, setNextHours] = useState<string[][]>([]);
   const [config, setConfig] = useState<Config | null>(null);
   const [amountNextOpenDay, setAmountNextOpenDay] = useState(1);
 
+  const [currentSchedule, setCurrentSchedule] = useState(null);
+  const [nextShortSchedules, setNextShortSchedules] = useState([]);
+
   useEffect(() => {
     const fetch = async () => {
-      console.log("Fetching account info...");
-      const response = await axios.get(
-        `${URL_API}/public/account/${ACCOUNT_ID}/info`
-      );
-      setConfig(response.data.config);
+      const response = await axios.get(`${URL_API}/accounts/${ACCOUNT_ID}`);
+      setConfig(response.data.data.weekDays);
     };
 
     fetch().catch((error) => {
@@ -116,15 +125,14 @@ export default function Render() {
   useEffect(() => {
     if (!config) return;
 
-    const currentDay = dayjs().format("dddd");
-    setOpenToDay(
-      config.days[cleanString(currentDay).toLowerCase().slice(0, 3)]
-    );
-    setHours(config.weekHours[cleanString(currentDay).toUpperCase()]);
+    const currentDay = dayjs().format("dddd").toLowerCase();
+    const configDay = config[currentDay as keyof Config];
+
+    setOpenToDay(configDay.open);
 
     const searchingAmountNextOpenDay = (amount: number) => {
-      const nextDay = dayjs().add(amount, "day").format("dddd");
-      if (!config.days[cleanString(nextDay).toLowerCase().slice(0, 3)]) {
+      const nextDay = dayjs().add(amount, "day").format("dddd").toLowerCase();
+      if (!config[nextDay as keyof Config].open) {
         return searchingAmountNextOpenDay(amount + 1);
       }
 
@@ -134,9 +142,11 @@ export default function Render() {
     const daysToNextService = searchingAmountNextOpenDay(1);
     setAmountNextOpenDay(daysToNextService);
 
-    const nextOpenDay = dayjs().add(daysToNextService, "day").format("dddd");
+    const nextOpenDay = dayjs()
+      .add(daysToNextService, "day")
+      .format("dddd")
+      .toLowerCase();
     setNextDay(nextOpenDay);
-    setNextHours(config.weekHours[cleanString(nextOpenDay).toUpperCase()]);
   }, [config]);
 
   useEffect(() => {
@@ -150,21 +160,18 @@ export default function Render() {
       const fetch = async () => {
         try {
           const response = await Promise.all([
+            fetchSchedules(dayjs().startOf("day").toISOString()),
             fetchSchedules(
-              dayjs().startOf("day").toISOString(),
-              dayjs().endOf("day").toISOString()
+              dayjs().add(amountNextOpenDay, "day").startOf("day").toISOString()
             ),
-            fetchSchedules(
-              dayjs()
-                .add(amountNextOpenDay, "day")
-                .startOf("day")
-                .toISOString(),
-              dayjs().add(amountNextOpenDay, "day").endOf("day").toISOString()
-            ),
+            fetchCurrentSchedule(),
+            fetchNextSchedules(),
           ]);
 
           setSchedules(response[0]);
           setNextSchedules(response[1]);
+          setCurrentSchedule(response[2]);
+          setNextShortSchedules(response[3]);
         } catch (error) {
           console.error("Error fetching schedules:", error);
         }
@@ -183,7 +190,7 @@ export default function Render() {
 
         setUrls(response.data.sort(() => Math.random() - 0.5));
       } catch (error) {
-        console.log("error fetching media", error);
+        console.error("error fetching media", error);
       }
     };
 
@@ -224,7 +231,7 @@ export default function Render() {
 
         setNews(response.data.sort(() => Math.random() - 0.5));
       } catch (error) {
-        console.log("error fetching news", error);
+        console.error("error fetching news", error);
       }
     };
 
@@ -245,40 +252,6 @@ export default function Render() {
         return CurrentTime;
     }
   }, [currentItem]);
-
-  const schedulesWithAddicionals = useMemo(
-    () => schedulesCalculateAddicionals(schedules),
-    [schedules]
-  );
-
-  const schedulesNextWithAddicionals = useMemo(
-    () => schedulesCalculateAddicionals(nextSchedules),
-    [nextSchedules]
-  );
-
-  const scheduleCurrent = useMemo(() => {
-    const lastSchedules = schedules
-      .filter((item) => dayjs(item.scheduleAt).isBefore(dayjs()))
-      .sort(
-        (a, b) => dayjs(b.scheduleAt).valueOf() - dayjs(a.scheduleAt).valueOf()
-      );
-
-    if (lastSchedules.length === 0) return null;
-
-    return lastSchedules[0];
-  }, [schedules]);
-
-  const schedulesCurrentNext = useMemo(
-    () =>
-      schedules
-        .filter((item) => dayjs(item.scheduleAt).isAfter(dayjs()))
-        .slice(0, 3)
-        .sort(
-          (a, b) =>
-            new Date(a.scheduleAt).getTime() - new Date(b.scheduleAt).getTime()
-        ),
-    [schedules]
-  );
 
   const newsCurrent = useMemo(() => {
     if (news.length === 0)
@@ -303,18 +276,16 @@ export default function Render() {
         <Animated.View style={[styles.main, { opacity: fadeAnim }]}>
           <Image source={logo} style={styles.image} />
           <Component
-            schedules={schedulesWithAddicionals}
-            nextSchedules={schedulesNextWithAddicionals}
-            schedule={scheduleCurrent}
+            schedules={schedules}
+            nextSchedules={nextSchedules}
+            schedule={currentSchedule}
             openToDay={openToDay}
             nextDay={nextDay}
-            hours={hours}
-            nextHours={nextHours}
             news={newsCurrent}
           />
         </Animated.View>
         <ThemedView>
-          <NextSchedules schedules={schedulesCurrentNext} />
+          <NextSchedules schedules={nextShortSchedules} />
         </ThemedView>
       </ThemedView>
     </>
@@ -340,8 +311,10 @@ const styles = StyleSheet.create({
     flex: 1,
     height: "100%",
     resizeMode: "cover",
-    borderRadius: 8,
+    // borderRadius: 8,
     position: "absolute",
-    opacity: 0.1,
+    left: 30,
+    opacity: 0.2,
+    width: "100%",
   },
 });

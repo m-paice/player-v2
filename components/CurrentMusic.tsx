@@ -17,7 +17,13 @@ interface Props {
 
 export const CurrentMusic = ({ urls }: Props) => {
   const soundRef = useRef<Audio.Sound | null>(null);
+  const playNextRef = useRef<NodeJS.Timeout | null>(null);
+  const isLoadingRef = useRef(false);
+
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [errorCount, setErrorCount] = useState(0);
 
   useEffect(() => {
     // Configurar o áudio para reprodução
@@ -30,42 +36,83 @@ export const CurrentMusic = ({ urls }: Props) => {
     });
 
     return () => {
+      // Cleanup
       if (soundRef.current) {
         soundRef.current.unloadAsync();
+      }
+      if (playNextRef.current) {
+        clearTimeout(playNextRef.current);
       }
     };
   }, []);
 
   const playNext = useCallback(() => {
-    setCurrentIndex((prevIndex) => {
-      const nextIndex = (prevIndex + 1) % urls.length;
-      return nextIndex;
-    });
+    // Prevenir múltiplas chamadas simultâneas
+    if (playNextRef.current) {
+      clearTimeout(playNextRef.current);
+    }
+
+    playNextRef.current = setTimeout(() => {
+      setCurrentIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % urls.length;
+        console.log(`Avançando para música ${nextIndex + 1}/${urls.length}`);
+        return nextIndex;
+      });
+      setErrorCount(0); // Reset error count ao avançar
+    }, 100); // Pequeno delay para evitar race conditions
   }, [urls.length]);
 
   const onPlaybackStatusUpdate = useCallback(
     (status: AVPlaybackStatus) => {
-      // @ts-ignore
+      if (!status.isLoaded) return;
+
+      // Música finalizada naturalmente
       if (status.didJustFinish) {
         console.log("Música finalizada, tocando próxima");
         playNext();
+        return;
       }
 
-      // @ts-ignore
+      // Erro na reprodução
       if (status.error) {
-        // @ts-ignore
-        console.log("Erro na reprodução:", status.error);
-        playNext();
+        console.error("Erro na reprodução:", status.error);
+        setHasError(true);
+
+        // Prevenir loop infinito - máximo 3 tentativas por música
+        if (errorCount < 3) {
+          setErrorCount((prev) => prev + 1);
+          setTimeout(() => playNext(), 1000); // Delay antes de tentar próxima
+        } else {
+          console.error("Muitos erros consecutivos, pausando reprodução");
+          setErrorCount(0);
+        }
+      } else {
+        // Reset error state se música está tocando normalmente
+        if (hasError) {
+          setHasError(false);
+        }
       }
     },
-    [playNext]
+    [playNext, hasError, errorCount]
   );
 
   const loadAndPlaySound = useCallback(async () => {
+    // Prevenir carregamentos simultâneos
+    if (isLoadingRef.current) {
+      console.log("Carregamento já em andamento, aguardando...");
+      return;
+    }
+
     try {
-      // Parar música atual se existir
+      isLoadingRef.current = true;
+      setIsLoading(true);
+      setHasError(false);
+
+      // Parar e descarregar música atual
       if (soundRef.current) {
+        console.log("Descarregando música anterior");
         await soundRef.current.unloadAsync();
+        soundRef.current = null;
       }
 
       const currentUrl = urls[currentIndex].url;
@@ -73,49 +120,101 @@ export const CurrentMusic = ({ urls }: Props) => {
         `Carregando música ${currentIndex + 1}/${urls.length}: ${currentUrl}`
       );
 
-      // Carregar nova música
+      // Validar URL
+      if (!currentUrl || currentUrl.trim() === "") {
+        throw new Error("URL inválida ou vazia");
+      }
+
+      // Carregar nova música (sem tocar automaticamente)
       const { sound } = await Audio.Sound.createAsync(
         { uri: currentUrl },
-        { shouldPlay: true }, // Tocar automaticamente
+        { shouldPlay: false }, // Não tocar automaticamente
         onPlaybackStatusUpdate
       );
 
       soundRef.current = sound;
-    } catch (error) {
-      console.log("Erro ao carregar áudio:", error);
-      // Tentar próxima música em caso de erro
-      playNext();
-    }
-  }, [currentIndex, urls, onPlaybackStatusUpdate, playNext]);
 
+      // Verificar se o áudio foi carregado corretamente
+      const status = await sound.getStatusAsync();
+
+      if (status.isLoaded) {
+        console.log("Áudio carregado com sucesso, iniciando reprodução");
+        await sound.playAsync();
+      } else {
+        throw new Error("Falha ao carregar o áudio");
+      }
+    } catch (error) {
+      console.error("Erro ao carregar áudio:", error);
+      setHasError(true);
+
+      // Tentar próxima música após delay
+      setTimeout(() => {
+        if (errorCount < 3) {
+          setErrorCount((prev) => prev + 1);
+          playNext();
+        }
+      }, 1500);
+    } finally {
+      isLoadingRef.current = false;
+      setIsLoading(false);
+    }
+  }, [currentIndex, urls, onPlaybackStatusUpdate, playNext, errorCount]);
+
+  // Effect principal para carregar música quando índice muda
   useEffect(() => {
-    if (!urls || urls.length === 0) return;
+    if (!urls || urls.length === 0) {
+      console.log("Nenhuma URL disponível");
+      return;
+    }
+
+    if (currentIndex >= urls.length) {
+      console.log("Índice inválido, resetando para 0");
+      setCurrentIndex(0);
+      return;
+    }
 
     loadAndPlaySound();
-  }, [currentIndex, urls, loadAndPlaySound]);
+  }, [currentIndex, urls]); // Removido loadAndPlaySound das dependências
 
   const currentMusic = useMemo(() => {
-    if (urls.length === 0) return null;
-
+    if (!urls || urls.length === 0) return null;
     return urls[currentIndex];
   }, [urls, currentIndex]);
+
+  // Função para debug - pode ser removida em produção
+  const debugInfo = useMemo(
+    () => ({
+      currentIndex,
+      totalUrls: urls.length,
+      isLoading,
+      hasError,
+      errorCount,
+      currentUrl: currentMusic?.url,
+    }),
+    [currentIndex, urls.length, isLoading, hasError, errorCount, currentMusic]
+  );
+
+  // Log para debug - remover em produção
+  useEffect(() => {
+    console.log("Debug Info:", debugInfo);
+  }, [debugInfo]);
 
   return (
     <ThemedView style={styles.container}>
       {!currentMusic ? (
-        <ThemedText>Carregando músicas</ThemedText>
+        <ThemedText>
+          {isLoading ? "Carregando música..." : "Carregando músicas"}
+        </ThemedText>
       ) : (
         <ThemedView style={styles.content}>
           <IconMusic />
           <ThemedText
-            style={{
-              display: "flex",
-              flexDirection: "row",
-            }}
+            style={styles.musicText}
             numberOfLines={1}
             ellipsizeMode="tail"
           >
-            {currentMusic?.name} - {currentMusic?.artist}
+            {hasError ? "⚠️ " : ""}
+            {currentMusic.name} - {currentMusic.artist}
           </ThemedText>
         </ThemedView>
       )}
@@ -129,7 +228,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-
     width: "68%",
   },
   content: {
@@ -137,5 +235,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     width: "95%",
+  },
+  musicText: {
+    display: "flex",
+    flexDirection: "row",
   },
 });

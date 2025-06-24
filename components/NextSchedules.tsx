@@ -16,7 +16,7 @@ export const NextSchedules = ({ schedules }: Props) => {
         <ThemedText>Não há agendamentos para hoje.</ThemedText>
       ) : (
         schedules.map((schedule) => (
-          <ThemedView key={schedule.id} style={styles.content}>
+          <ThemedView key={schedule._id} style={styles.content}>
             <ThemedView>
               <ThemedText>HOJE</ThemedText>
               <ThemedText>
@@ -25,7 +25,7 @@ export const NextSchedules = ({ schedules }: Props) => {
             </ThemedView>
             <ThemedView>
               <ThemedText style={{ fontWeight: "bold" }}>
-                {schedule?.shortName?.trim() || schedule?.user?.name.trim()}
+                {schedule?.client.name || ""}
               </ThemedText>
               <ThemedText style={{ maxWidth: 280 }}>
                 {schedule.services.map((item) => item.name).join(" + ")}

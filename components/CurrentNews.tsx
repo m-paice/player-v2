@@ -54,7 +54,7 @@ export const CurrentNews = ({ news }: Props) => {
         />
         <ThemedText
           style={{
-            fontSize: 24,
+            fontSize: 32,
             lineHeight: 30,
             position: "absolute",
             bottom: 16,
@@ -79,8 +79,8 @@ export const CurrentNews = ({ news }: Props) => {
             key={index}
             numberOfLines={2}
             style={{
-              fontSize: 16,
-              lineHeight: 24,
+              fontSize: 24,
+              lineHeight: 32,
               marginBottom: 8,
               color: "#333",
             }}

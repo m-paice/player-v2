@@ -42,6 +42,6 @@ const styles = StyleSheet.create({
     display: "flex",
     justifyContent: "center",
 
-    width: 120,
+    width: 130,
   },
 });

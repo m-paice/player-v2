@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 
 import { useTime } from "@/hooks/useTime";
+import { monthLabel, weekDayLabel } from "@/utils/labelNames";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 
@@ -20,7 +21,21 @@ export const CurrentTime = () => {
     >
       <ThemedText style={{ fontSize: 100, lineHeight: 80 }}>{time}</ThemedText>
       <ThemedText type="subtitle">
-        {dayjs().format("dddd, D [de] MMMM [de] YYYY")}
+        {
+          weekDayLabel[
+            dayjs().format("dddd").toLowerCase() as keyof typeof weekDayLabel
+          ]
+        }
+        {", "}
+        {dayjs().format("D")}
+        {" de "}
+        {
+          monthLabel[
+            dayjs().format("MMMM").toLowerCase() as keyof typeof monthLabel
+          ]
+        }
+        {" de"}
+        {dayjs().format(" YYYY")}
       </ThemedText>
     </ThemedView>
   );

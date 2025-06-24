@@ -1,8 +1,7 @@
 import dayjs from "dayjs";
 import { StyleSheet } from "react-native";
 
-import { generateTimeSlots } from "@/utils/generateTimeSlots";
-import { useMemo } from "react";
+import { monthLabel, weekDayLabel } from "@/utils/labelNames";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 
@@ -11,95 +10,25 @@ interface Props {
   nextDay: string;
   schedules: string[];
   nextSchedules: string[];
-  hours: string[][];
-  nextHours: string[][];
 }
-
-interface TimeSlotsParams {
-  hours: string[][];
-}
-
-const timeSlots = ({ hours }: TimeSlotsParams) => {
-  if (hours.length === 0) return [];
-
-  const START_HOUR = hours[0][0];
-  const END_HOUR = hours[1][1];
-
-  const START_INTERVAL = hours[0][1];
-  const END_INTERVAL = hours[1][0];
-
-  const timeSlots = generateTimeSlots(START_HOUR, END_HOUR);
-  const intervalSlots = generateTimeSlots(START_INTERVAL, END_INTERVAL);
-
-  if (intervalSlots.indexOf(START_INTERVAL) !== -1) {
-    intervalSlots.splice(intervalSlots.indexOf(START_INTERVAL), 1);
-  }
-  if (intervalSlots.indexOf(END_INTERVAL) !== -1) {
-    intervalSlots.splice(intervalSlots.indexOf(END_INTERVAL), 1);
-  }
-
-  return timeSlots.filter((slot) => !intervalSlots.includes(slot));
-};
-
-interface FilteredSchedulesParams {
-  schedules: string[];
-  checkCurrentTime?: boolean;
-  hours: string[][];
-}
-
-const filteredSchedules = ({
-  schedules,
-  checkCurrentTime,
-  hours,
-}: FilteredSchedulesParams) => {
-  if (checkCurrentTime)
-    return timeSlots({
-      hours,
-    }).filter(
-      (time) =>
-        dayjs()
-          .set("hour", parseInt(time.split(":")[0], 10))
-          .set("minute", parseInt(time.split(":")[1], 10))
-          .isAfter(dayjs()) && !schedules.includes(time)
-    );
-
-  return timeSlots({
-    hours,
-  }).filter((time) => !schedules.includes(time));
-};
 
 export const Schedules = ({
   openToDay,
   nextDay,
   schedules,
   nextSchedules,
-  hours,
-  nextHours,
 }: Props) => {
-  const currentSchedulesData = useMemo(
-    () =>
-      filteredSchedules({
-        schedules,
-        checkCurrentTime: true,
-        hours,
-      }),
-    [schedules]
-  );
-  const nextSchedulesData = useMemo(
-    () =>
-      filteredSchedules({
-        schedules: nextSchedules,
-        checkCurrentTime: false,
-        hours: nextHours,
-      }),
-    [nextSchedules]
-  );
-
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={{ width: "50%", padding: 16 }}>
         <ThemedText style={styles.title}>
-          Hoje - {dayjs().format("D [de] MMMM")}
+          Hoje - {dayjs().format("D")}
+          {" de "}
+          {
+            monthLabel[
+              dayjs().format("MMMM").toLowerCase() as keyof typeof monthLabel
+            ]
+          }
         </ThemedText>
         <ThemedView style={styles.content}>
           {!openToDay ? (
@@ -115,7 +44,7 @@ export const Schedules = ({
             >
               <ThemedText type="title">Fechado!</ThemedText>
             </ThemedView>
-          ) : currentSchedulesData.length === 0 ? (
+          ) : schedules.length === 0 ? (
             <ThemedText
               type="subtitle"
               style={{ width: "100%", textAlign: "center" }}
@@ -123,7 +52,7 @@ export const Schedules = ({
               Não há horários disponíveis para hoje.
             </ThemedText>
           ) : (
-            currentSchedulesData.map((time) => {
+            schedules.map((time) => {
               return (
                 <ThemedView key={time} style={styles.item}>
                   <ThemedText style={styles.text}>{time}</ThemedText>
@@ -135,18 +64,29 @@ export const Schedules = ({
       </ThemedView>
       <ThemedView style={{ width: "50%", padding: 16 }}>
         <ThemedText style={styles.title}>
-          {nextDay} - {dayjs().add(1, "day").format("D [de] MMMM")}
+          {weekDayLabel[nextDay as keyof typeof weekDayLabel]} -{" "}
+          {dayjs().add(1, "day").format("D")}
+          {" de "}
+          {
+            monthLabel[
+              dayjs()
+                .add(1, "day")
+                .format("MMMM")
+                .toLowerCase() as keyof typeof monthLabel
+            ]
+          }
         </ThemedText>
         <ThemedView style={styles.content}>
-          {nextSchedulesData.length === 0 ? (
+          {nextSchedules.length === 0 ? (
             <ThemedText
               type="subtitle"
               style={{ width: "100%", textAlign: "center" }}
             >
-              Não há horários disponíveis para {nextDay}.
+              Não há horários disponíveis para{" "}
+              {weekDayLabel[nextDay as keyof typeof weekDayLabel]}.
             </ThemedText>
           ) : (
-            nextSchedulesData.map((time) => {
+            nextSchedules.map((time) => {
               return (
                 <ThemedView key={time} style={styles.item}>
                   <ThemedText style={styles.text}>{time}</ThemedText>
@@ -175,18 +115,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   item: {
-    padding: 8,
+    padding: 16,
     borderWidth: 1,
     borderColor: "#B2D3D0",
-    backgroundColor: "#D2E4E1",
+    backgroundColor: "#1A3D3B",
     marginVertical: 2,
     borderRadius: 4,
   },
   title: {
     textAlign: "center",
-    fontSize: 24,
+    fontSize: 32,
     marginBottom: 16,
     lineHeight: 30,
   },
-  text: { textAlign: "center", color: "#1A3D3B", fontSize: 24 },
+  text: { textAlign: "center", color: "#ffffff", fontSize: 32 },
 });
